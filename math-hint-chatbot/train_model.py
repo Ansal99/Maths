@@ -15,5 +15,5 @@ engine = HintEngine(csv_path='data/maths_only.csv')
 
 print("\n✅ Training complete!")
 print(f"📊 Total questions indexed: {len(engine.df)}")
-print("\nAb server start karne ke liye run karo:")
+print("\nAb now you can run the python app.py")
 print("    python app.py")
