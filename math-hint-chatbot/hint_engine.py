@@ -20,7 +20,7 @@ class HintEngine:
         print(f"📊 Total rows in CSV: {len(self.df)}")
         print(f"📋 Columns: {self.df.columns.tolist()}")
 
-        # Step 1: Math context filter
+        # Step 1: Filter by Math context
         if 'context' in self.df.columns:
             self.df = self.df[
                 self.df['context'].str.contains('Mathematics|Maths|Math', case=False, na=False)
@@ -28,7 +28,7 @@ class HintEngine:
 
         print(f"📌 After context filter: {len(self.df)} questions")
 
-        # Step 2: Non-math questions hatao
+        # Step 2: Remove non-Math questions
         math_keywords = [
             'equation', 'formula', 'calculate', 'number', 'triangle', 'circle',
             'square', 'rectangle', 'angle', 'area', 'perimeter', 'volume',
@@ -47,7 +47,7 @@ class HintEngine:
             'mode', 'range', 'quadratic', 'linear', 'progression', 'sequence',
             'series', 'matrix', 'determinant', 'trigonometry', 'sine', 'cosine',
             'tangent', 'logarithm', 'exponent', 'power', 'root', 'set',
-            'subset', 'union', 'intersection', 'complement', 'function',
+            'subset','union', 'intersection', 'complement', 'function',
             'domain', 'range', 'slope', 'intercept', 'parabola', 'hyperbola',
             'ellipse', 'circle', 'radius', 'diameter', 'chord', 'arc',
             'sector', 'segment', 'height', 'base', 'hypotenuse', 'adjacent',
@@ -88,7 +88,7 @@ class HintEngine:
 
         print(f"✅ Clean Maths questions loaded: {len(self.df)}")
 
-        # Embeddings banao ya cache se load karo
+        # Load embeddings from cache or generate fresh
         cache_file = 'data/embeddings_cache.pkl'
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as f:
@@ -111,7 +111,7 @@ class HintEngine:
         if best_score < 0.45:
             return {
                 "found": False,
-                "message": "❌ Yeh Math ka question nahi lagta, ya dataset mein nahi hai. Koi aur Math question puchho!",
+                "message": "❌ This does not appear to be a Math question, or it is not available in the dataset. Please try a different Math question!",
                 "hints": [],
                 "score": float(best_score)
             }
@@ -131,7 +131,7 @@ class HintEngine:
         raw_hint = str(row.get('hint', row.get('answer', '')))
 
         if not raw_hint or raw_hint == 'nan':
-            return ["Is question ko solve karne ke liye pehle basic formula yaad karo."]
+            return ["Start by recalling the basic formula relevant to this question."]
 
         sentences = re.split(r'(?<=[.!?])\s+', raw_hint.strip())
         sentences = [s.strip() for s in sentences if len(s.strip()) > 5]
@@ -148,5 +148,5 @@ class HintEngine:
                 elif i == 1:
                     hints.append(f"🔍 Hint 2: {sentence}")
                 else:
-                    hints.append(f"🧩 Hint 3 (Last): {sentence}")
+                    hints.append(f"🧩 Hint 3 (Final): {sentence}")
             return hints

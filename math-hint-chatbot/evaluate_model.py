@@ -11,7 +11,7 @@ print("=" * 60)
 print("📊 Math Hint Chatbot — Model Evaluation Report")
 print("=" * 60)
 
-# ── Data load karo ──────────────────────────────────────────
+# ── Load Data ───────────────────────────────────────────────
 df = pd.read_csv('data/maths_only.csv')
 df = df[df['context'].str.contains('Mathematics|Maths|Math', case=False, na=False)]
 df = df[df['grade'].isin([6, 7, 8, 9, 10])].reset_index(drop=True)
@@ -44,10 +44,10 @@ math_keywords = [
 pattern = '|'.join(math_keywords)
 df = df[df['question'].str.contains(pattern, case=False, na=False)].reset_index(drop=True)
 
-# Embeddings load karo
+# Load embeddings
 with open('data/embeddings_cache.pkl', 'rb') as f:
     embeddings = pickle.load(f)
-# Embeddings ko df size ke saath match karo
+# Align embeddings to dataframe size
 embeddings = embeddings[:len(df)]
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -118,17 +118,17 @@ for query, keyword in test_queries:
     sims = cosine_similarity(query_emb, embeddings)[0]
     best_score = np.max(sims)
     best_idx = np.argmax(sims)
-# Embeddings aur df size match karo
+    # Align index to dataframe size
     best_idx = min(best_idx, len(df) - 1)
     matched_q = df.iloc[best_idx]['question']
 
-    # Confidence based accuracy — 65%+ ko correct maano
-is_correct = bool(best_score >= 0.65)
+    # Mark as correct if confidence is 65% or above
+    is_correct = bool(best_score >= 0.65)
 
-if is_correct:
+    if is_correct:
         correct += 1
 
-results.append({
+    results.append({
         "query": query,
         "confidence": best_score,
         "matched": matched_q[:55] + "..." if len(matched_q) > 55 else matched_q,
@@ -155,7 +155,7 @@ for q in all_queries:
     q_emb = model.encode([q])
     sims = cosine_similarity(q_emb, embeddings)[0]
     sims_sorted = np.sort(sims)[::-1]
-    # Second best (exclude self)
+    # Use second-best match to exclude self-similarity
     confidences.append(sims_sorted[1])
 
 confidences = np.array(confidences)
@@ -170,9 +170,9 @@ mid  = ((confidences >= 0.45) & (confidences < 0.7)).sum()
 low  = (confidences < 0.45).sum()
 total = len(confidences)
 
-print(f"\n  High (≥70%)  : {high:4d} ({high/total*100:.1f}%)")
-print(f"  Medium (45-70%): {mid:4d} ({mid/total*100:.1f}%)")
-print(f"  Low (<45%)   : {low:4d} ({low/total*100:.1f}%)")
+print(f"\n  High (≥70%)    : {high:4d} ({high/total*100:.1f}%)")
+print(f"  Medium (45-70%) : {mid:4d} ({mid/total*100:.1f}%)")
+print(f"  Low (<45%)     : {low:4d} ({low/total*100:.1f}%)")
 
 # ── Grade-wise Accuracy ──────────────────────────────────────
 print(f"\n🏫 Grade-wise Retrieval Quality")
@@ -201,7 +201,5 @@ print(f"  Dataset Size          : {len(df)} questions (Class 6-10)")
 print(f"  Retrieval Accuracy    : {accuracy:.1f}%")
 print(f"  Dataset Diversity     : {diversity_score:.1f}%")
 print(f"  Avg Confidence        : {confidences.mean()*100:.1f}%")
-print(f"  Threshold Used        : 45% (low confidence reject hoga)")
+print(f"  Threshold Used        : 45% (queries below this threshold will be rejected)")
 print(f"{'=' * 60}")
-
-

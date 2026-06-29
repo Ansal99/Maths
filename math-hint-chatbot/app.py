@@ -59,7 +59,7 @@ def ask_question():
         "total_hints_available": len(result['hints']),
         "hint_level": max_level,
         "confidence": f"{round(result['score'] * 100, 1)}%",
-        "message": "Direct answer nahi dunga — hints se try karo! 😊"
+        "message": "No direct answers here — work through the hints and give it a try! 😊"
     })
 
 @app.route('/next-hint', methods=['POST'])
@@ -68,7 +68,7 @@ def next_hint():
     session_id = data.get('session_id', 'default')
 
     if session_id not in session_hints:
-        return jsonify({"error": "Pehle koi question puchho!"}), 400
+        return jsonify({"error": "Please ask a question first!"}), 400
 
     session = session_hints[session_id]
     current_level = session['current_level']
@@ -77,7 +77,7 @@ def next_hint():
     if current_level >= len(all_hints):
         return jsonify({
             "status": "max_hints_reached",
-            "message": "Maine sari hints de di hain! Ab khud try karo — tum kar sakte ho! 💪",
+            "message": "All hints have been provided! Now give it your best shot — you've got this! 💪",
             "hints": all_hints
         })
 
